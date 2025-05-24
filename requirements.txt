@@ -4,3 +4,6 @@ pandas
 scikit-learn 
 statsmodels 
 matplotlib
+folium
+streamlit-folium
+plotly
