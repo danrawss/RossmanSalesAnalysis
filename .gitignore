@@ -10,9 +10,6 @@ venv/
 # Streamlit cache
 .streamlit/
 
-# Data files
-data/
-
 # Python env metadata
 *.egg-info/
 
