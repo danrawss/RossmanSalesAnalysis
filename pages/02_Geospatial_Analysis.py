@@ -65,45 +65,46 @@ for _, row in cluster_stats.iterrows():
         f"- Mean: {row['mean']:.0f} avg sales/day\n"
     )
 
-# precompute max for sizing
-max_sales = stores.avg_sales.max()
-
 # 3) Build Folium map 
 # Define color palette (hex)
 palette = ["#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33"][:k]
 
 m = folium.Map(location=[51.2, 10.4], zoom_start=6)
 
+# Prepare a FeatureGroup for each cluster
+cluster_groups = {
+    i: folium.FeatureGroup(name=f"Cluster {i}", show=True)
+    for i in range(k)
+}
+
+# precompute max for sizing
+max_sales = stores.avg_sales.max()
+
 for _, row in stores.iterrows():
     radius = max(3, (row.avg_sales / max_sales) * 15)
-    folium.CircleMarker(
+    marker = folium.CircleMarker(
         location=[row.lat, row.lon],
         radius=radius,
         color=palette[int(row.cluster)],
         fill=True,
         fill_opacity=0.7,
-        popup=(
-            f"Store: {row.Store}<br>"
-            f"Avg Sales: {row.avg_sales:,.0f}<br>"
-            f"Cluster: {row.cluster}"
-        ),
-    ).add_to(m)
+        popup=f"Store {row.Store} | Avg: {row.avg_sales:.0f}"
+    )
+    cluster_groups[row.cluster].add_child(marker)
 
-# 4) Render the map
+# 4) Add all cluster groups to the map
+for fg in cluster_groups.values():
+    m.add_child(fg)
+
+# 5) Add the layer control (the “legend”)
+folium.LayerControl(position='topleft', collapsed=False).add_to(m)
+
+# 6) Render
 st.subheader("Interactive Store Clusters Map")
-st.caption("Circle size ∝ average sales; color = cluster")
-# fix the key so Streamlit doesn't treat it as a brand-new widget each run
-st_folium(m, width=700, height=500, key="clusters_map")
+st.caption("Use the checkboxes to toggle cluster visibility")
+st_folium(m, width=800, height=600)
 
-# 5) Cluster color legend
-st.subheader("🗂️ Cluster Color Legend")
-legend_cols = st.columns(len(palette))
-for idx, (col, color) in enumerate(zip(legend_cols, palette)):
-    # In each column, show a swatch and the label
-    with col:
-        col.markdown(
-            f"<div style='width:50px; height:20px; background-color:{color};'></div>",
-            unsafe_allow_html=True
-        )
-        col.caption(f"Cluster {idx}")
-    
+st.markdown("""
+- **Circle size** ∝ average daily sales.  
+- **Toggle clusters** on/off via the layer control checkboxes.
+""")

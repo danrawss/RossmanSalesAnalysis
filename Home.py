@@ -25,7 +25,7 @@ Since Germany is Rossmann’s primary market, this app focuses on **German** sto
 
 **🔗 Kaggle Dataset**  
 Download the original data here:  
-https://www.kaggle.com/c/rossmann-store-sales/data  
+https://www.kaggle.com/datasets/shahpranshu27/rossman-store-sales
 """)
 
 # Quick high-level KPIs
